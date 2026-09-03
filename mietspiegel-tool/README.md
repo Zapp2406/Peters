@@ -51,11 +51,14 @@ zu prüfen:
    Öffnen** starten und den Sicherheitshinweis bestätigen (das Bundle ist
    nicht signiert, macOS Gatekeeper fragt beim ersten Start einmal nach).
    Danach genügt ein normaler Doppelklick.
-3. **Start-Button auf dem Schreibtisch anlegen**: `MietspiegelTool.app` im
-   Finder mit Rechtsklick → **Alias erstellen**, den Alias auf den
-   Schreibtisch ziehen. Der Alias bleibt auch bei einem verschobenen
-   Projektordner-Pfad *nicht* automatisch gültig — bei einem Umzug des
-   Ordners den Alias neu anlegen.
+3. **Start-Icon auf dem Schreibtisch anlegen**: Doppelklick auf
+   `install_desktop_icon.command` (einmalig, ebenfalls per Rechtsklick →
+   Öffnen bestätigen). Legt automatisch ein Alias-Icon "MietspiegelTool" auf
+   dem Schreibtisch an. Alternativ manuell: `MietspiegelTool.app` im Finder
+   mit Rechtsklick → **Alias erstellen**, den Alias auf den Schreibtisch
+   ziehen. Der Alias bleibt nur gültig, solange der Projektordner an diesem
+   Ort liegen bleibt — bei einem Umzug des Ordners den Alias neu anlegen
+   (Skript erneut ausführen).
 4. Beim ersten Start wird automatisch eine Python-Umgebung angelegt und alle
    Abhängigkeiten installiert (dauert einmalig ca. 1 Minute, Python 3 muss
    installiert sein: <https://www.python.org/downloads/> oder
@@ -145,6 +148,7 @@ mietspiegel-tool/
 ├── app.py                  Flask-Anwendung (Routen/API)
 ├── start_local.sh          Lokaler Start ohne Docker (venv + Browser)
 ├── MietspiegelTool.app/    macOS-App-Bundle (Doppelklick-Start, siehe oben)
+├── install_desktop_icon.command  Legt einmalig ein Start-Icon auf dem Schreibtisch an
 ├── Dockerfile              Produktions-Image (gunicorn)
 ├── docker-compose.yml      Für lokalen Docker-Test und Synology Container Manager
 ├── data/
