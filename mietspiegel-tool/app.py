@@ -123,4 +123,8 @@ def api_mieterliste_export():
 
 if __name__ == "__main__":
     port = int(os.environ.get("MIETSPIEGEL_PORT", os.environ.get("FLASK_RUN_PORT", 5001)))
-    app.run(debug=True, host="127.0.0.1", port=port)
+    # debug=False: der Werkzeug-Reloader startet den Prozess sonst doppelt neu,
+    # was den Start verzögert (siehe start_local.sh, das auf den Server wartet,
+    # bevor es den Browser öffnet) und ist für dieses lokale Endnutzer-Tool
+    # ohnehin nicht nötig.
+    app.run(debug=False, host="127.0.0.1", port=port)

@@ -37,13 +37,21 @@ fi
 PORT="${MIETSPIEGEL_PORT:-5001}"
 URL="http://127.0.0.1:${PORT}"
 
-# Browser nach kurzer Wartezeit im Hintergrund öffnen, sobald der Server steht
-( sleep 2
-  if command -v open >/dev/null 2>&1; then
-    open "$URL"
-  elif command -v xdg-open >/dev/null 2>&1; then
-    xdg-open "$URL"
-  fi
+# Browser erst öffnen, sobald der Server tatsächlich antwortet (statt fest
+# 2 Sekunden zu warten - bei einer frischen Installation kann allein das
+# pip install oben schon länger dauern, dann käme der Browser zu früh und
+# zeigt "Verbindung abgelehnt").
+( for _ in $(seq 1 60); do
+    if curl -s -o /dev/null "$URL"; then
+      if command -v open >/dev/null 2>&1; then
+        open "$URL"
+      elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$URL"
+      fi
+      break
+    fi
+    sleep 0.5
+  done
 ) &
 
 echo "Mietspiegel-Tool startet unter $URL"

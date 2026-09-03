@@ -78,7 +78,10 @@ zu prüfen:
    Abhängigkeiten installiert (dauert einmalig ca. 1 Minute, Python 3 muss
    installiert sein: <https://www.python.org/downloads/> oder
    `brew install python3`). Ein Terminal-Fenster öffnet sich mit dem
-   Server-Log, der Browser öffnet automatisch <http://127.0.0.1:5001>.
+   Server-Log; der Browser öffnet automatisch <http://127.0.0.1:5001>,
+   sobald der Server wirklich bereit ist (das Skript wartet aktiv darauf,
+   statt eine feste Zeit zu schlafen - bei einer Erstinstallation kann das
+   je nach Rechner 10-30 Sekunden dauern).
    (Port 5001 statt 5000, weil macOS' AirPlay-Receiver Port 5000 belegt und
    dort mit 403 Forbidden antwortet — falls das dennoch passiert: Systemeinstellungen
    → AirDrop & Handoff → "AirPlay-Empfänger" deaktivieren, oder einen anderen
