@@ -43,17 +43,69 @@ zu prüfen:
   konfigurierbarer Parameter hinterlegt, Standard 15 % – **vor Versand
   eines Erhöhungsverlangens den aktuellen Rechtsstand prüfen**)
 
-## Installation
+## Lokal starten (macOS, Doppelklick)
+
+1. Projektordner (dieses `mietspiegel-tool`-Verzeichnis) irgendwohin auf dem
+   Mac ablegen, z. B. `~/Programme/mietspiegel-tool`.
+2. **Einmalig**: `MietspiegelTool.app` (im Projektordner) mit **Rechtsklick →
+   Öffnen** starten und den Sicherheitshinweis bestätigen (das Bundle ist
+   nicht signiert, macOS Gatekeeper fragt beim ersten Start einmal nach).
+   Danach genügt ein normaler Doppelklick.
+3. **Start-Button auf dem Schreibtisch anlegen**: `MietspiegelTool.app` im
+   Finder mit Rechtsklick → **Alias erstellen**, den Alias auf den
+   Schreibtisch ziehen. Der Alias bleibt auch bei einem verschobenen
+   Projektordner-Pfad *nicht* automatisch gültig — bei einem Umzug des
+   Ordners den Alias neu anlegen.
+4. Beim ersten Start wird automatisch eine Python-Umgebung angelegt und alle
+   Abhängigkeiten installiert (dauert einmalig ca. 1 Minute, Python 3 muss
+   installiert sein: <https://www.python.org/downloads/> oder
+   `brew install python3`). Ein Terminal-Fenster öffnet sich mit dem
+   Server-Log, der Browser öffnet automatisch <http://127.0.0.1:5000>.
+5. **Beenden**: Terminal-Fenster schließen oder darin Strg+C drücken.
+
+Alternativ ganz ohne App-Bundle direkt im Terminal:
 
 ```bash
 cd mietspiegel-tool
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
+./start_local.sh
 ```
 
-Die App läuft danach unter <http://127.0.0.1:5000>.
+## Installation auf einer Synology NAS (später)
+
+Das Tool ist als Docker-Image vorbereitet und lässt sich über die Synology
+**Container Manager**-App installieren, sobald der lokale Test abgeschlossen ist:
+
+1. Projektordner per SSH/File Station auf die NAS kopieren (oder das
+   GitHub-Repo dort klonen).
+2. In der Synology **Container Manager**-App: **Projekt** → **Erstellen** →
+   Pfad zum `mietspiegel-tool`-Ordner auswählen (enthält `docker-compose.yml`)
+   → Container Manager baut das Image automatisch aus dem `Dockerfile`.
+3. Alternativ per SSH auf der NAS:
+   ```bash
+   cd /volume1/docker/mietspiegel-tool
+   docker compose up -d
+   ```
+4. Port `5000` ist im `docker-compose.yml` auf den NAS-Host gemappt — bei
+   Bedarf (z. B. wenn 5000 schon belegt ist) in `docker-compose.yml` auf
+   einen freien Port ändern, etwa `"8091:5000"`.
+5. Danach ist das Tool unter `http://<NAS-IP>:5000` (bzw. dem gewählten Port)
+   im lokalen Netzwerk erreichbar — für alle im Haushalt/Büro, nicht nur
+   lokal auf einem Rechner.
+
+Das Docker-Setup (`Dockerfile` + `docker-compose.yml`) läuft mit `gunicorn`
+und genau einem Worker-Prozess (bewusst so gewählt, siehe Kommentar im
+`Dockerfile` — das zuletzt hochgeladene Mieterlisten-Ergebnis für den
+Excel-Export wird aktuell im Prozessspeicher gehalten).
+
+### Manueller Docker-Test (ohne Synology)
+
+```bash
+cd mietspiegel-tool
+docker compose up --build
+```
+
+Danach ist die App unter <http://127.0.0.1:5000> erreichbar,
+`docker compose down` beendet sie wieder.
 
 ## Tests
 
@@ -91,6 +143,10 @@ angesetzt. Eine Beispieldatei liegt unter `sample_mieterliste.csv`.
 ```
 mietspiegel-tool/
 ├── app.py                  Flask-Anwendung (Routen/API)
+├── start_local.sh          Lokaler Start ohne Docker (venv + Browser)
+├── MietspiegelTool.app/    macOS-App-Bundle (Doppelklick-Start, siehe oben)
+├── Dockerfile              Produktions-Image (gunicorn)
+├── docker-compose.yml      Für lokalen Docker-Test und Synology Container Manager
 ├── data/
 │   ├── strassen.json       Straßenverzeichnis + Wohnlagen (Mietspiegel 2026)
 │   ├── tabelle.json        Orientierungswerte-Tabelle (Mietspiegel 2026)
