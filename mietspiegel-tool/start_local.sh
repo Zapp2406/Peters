@@ -25,7 +25,7 @@ else
   source .venv/bin/activate
 fi
 
-PORT="${MIETSPIEGEL_PORT:-5000}"
+PORT="${MIETSPIEGEL_PORT:-5001}"
 URL="http://127.0.0.1:${PORT}"
 
 # Browser nach kurzer Wartezeit im Hintergrund öffnen, sobald der Server steht

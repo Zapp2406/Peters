@@ -5,5 +5,5 @@ services:
     container_name: mietspiegel-tool
     restart: unless-stopped
     ports:
-      # Host-Port anpassen, falls 5000 auf dem NAS belegt ist, z.B. "8091:5000"
-      - "5000:5000"
+      # Host-Port anpassen, falls 5001 auf dem NAS belegt ist, z.B. "8091:5001"
+      - "5001:5001"

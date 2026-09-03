@@ -63,7 +63,11 @@ zu prüfen:
    Abhängigkeiten installiert (dauert einmalig ca. 1 Minute, Python 3 muss
    installiert sein: <https://www.python.org/downloads/> oder
    `brew install python3`). Ein Terminal-Fenster öffnet sich mit dem
-   Server-Log, der Browser öffnet automatisch <http://127.0.0.1:5000>.
+   Server-Log, der Browser öffnet automatisch <http://127.0.0.1:5001>.
+   (Port 5001 statt 5000, weil macOS' AirPlay-Receiver Port 5000 belegt und
+   dort mit 403 Forbidden antwortet — falls das dennoch passiert: Systemeinstellungen
+   → AirDrop & Handoff → "AirPlay-Empfänger" deaktivieren, oder einen anderen
+   Port über `MIETSPIEGEL_PORT=5555 ./start_local.sh` erzwingen.)
 5. **Beenden**: Terminal-Fenster schließen oder darin Strg+C drücken.
 
 Alternativ ganz ohne App-Bundle direkt im Terminal:
@@ -88,10 +92,10 @@ Das Tool ist als Docker-Image vorbereitet und lässt sich über die Synology
    cd /volume1/docker/mietspiegel-tool
    docker compose up -d
    ```
-4. Port `5000` ist im `docker-compose.yml` auf den NAS-Host gemappt — bei
-   Bedarf (z. B. wenn 5000 schon belegt ist) in `docker-compose.yml` auf
-   einen freien Port ändern, etwa `"8091:5000"`.
-5. Danach ist das Tool unter `http://<NAS-IP>:5000` (bzw. dem gewählten Port)
+4. Port `5001` ist im `docker-compose.yml` auf den NAS-Host gemappt — bei
+   Bedarf (z. B. wenn 5001 schon belegt ist) in `docker-compose.yml` auf
+   einen freien Port ändern, etwa `"8091:5001"`.
+5. Danach ist das Tool unter `http://<NAS-IP>:5001` (bzw. dem gewählten Port)
    im lokalen Netzwerk erreichbar — für alle im Haushalt/Büro, nicht nur
    lokal auf einem Rechner.
 
@@ -107,7 +111,7 @@ cd mietspiegel-tool
 docker compose up --build
 ```
 
-Danach ist die App unter <http://127.0.0.1:5000> erreichbar,
+Danach ist die App unter <http://127.0.0.1:5001> erreichbar,
 `docker compose down` beendet sie wieder.
 
 ## Tests
