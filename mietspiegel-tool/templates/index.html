@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Berliner Mietspiegel 2026 – Vergleichsmiete &amp; Mieterhöhungs-Check</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Berliner Mietspiegel 2026</h1>
+    <p class="subtitle">Vergleichsmiete berechnen · Mieterlisten prüfen · Mieterhöhungspotential aufzeigen</p>
+  </header>
+
+  <div class="disclaimer">
+    ⚠️ Rechenhilfe, keine Rechtsberatung. Die Orientierungshilfe für die Spanneneinordnung (Nr. 11) ist
+    laut BGH nicht Teil des qualifizierten Mietspiegels. Formvorschriften einer Mieterhöhung
+    (§&nbsp;558 BGB: Textform, 12-Monats-Sperrfrist, Zustimmungsfrist, Kappungsgrenze) sind gesondert zu prüfen.
+  </div>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="einzel">Einzelabfrage</button>
+    <button class="tab-btn" data-tab="liste">Mieterliste hochladen</button>
+  </nav>
+
+  <section id="tab-einzel" class="tab-panel active">
+    <form id="form-einzel">
+      <div class="grid">
+        <label>Straße
+          <input type="text" id="strasse" autocomplete="off" required>
+          <div id="strasse-vorschlaege" class="vorschlaege"></div>
+        </label>
+        <label>Hausnummer
+          <input type="number" id="hausnummer" required min="1">
+        </label>
+        <label>Bezirk (nur falls mehrdeutig)
+          <select id="bezirk"><option value="">– automatisch –</option></select>
+        </label>
+        <label>Wohnfläche (m²)
+          <input type="number" id="groesse_qm" step="0.1" required min="1">
+        </label>
+        <label>Baujahr / Bezugsfertigkeit
+          <input type="number" id="baujahr" required min="1700" max="2030">
+        </label>
+        <label>Ist-Nettokaltmiete (€/Monat, gesamt)
+          <input type="number" id="ist_miete" step="0.01" min="0">
+        </label>
+        <label>Kappungsgrenze
+          <select id="kappungsgrenze">
+            <option value="0.15" selected>15 % (Berlin, abgesenkte Kappungsgrenze)</option>
+            <option value="0.20">20 % (gesetzlicher Regelfall)</option>
+          </select>
+        </label>
+      </div>
+
+      <fieldset>
+        <legend>Wohnwerterhöhende / -mindernde Merkmale (Nr. 11 Orientierungshilfe)</legend>
+        <p class="hinweis">Optional. Ohne Angabe wird der Mittelwert der Mietspiegeltabelle angesetzt.</p>
+        <div id="merkmalgruppen"></div>
+      </fieldset>
+
+      <button type="submit">Berechnen</button>
+    </form>
+
+    <div id="ergebnis-einzel" class="ergebnis"></div>
+  </section>
+
+  <section id="tab-liste" class="tab-panel">
+    <form id="form-liste">
+      <label>Mieterliste (.xlsx oder .csv)
+        <input type="file" id="mieterliste-datei" accept=".xlsx,.xls,.csv" required>
+      </label>
+      <p class="hinweis">
+        Erwartete Spalten (Groß-/Kleinschreibung egal): <code>Straße</code>, <code>Hausnummer</code>,
+        <code>Wohnfläche</code>/<code>qm</code>, <code>Baujahr</code>, optional <code>Bezirk</code>,
+        <code>Nettokaltmiete</code>, <code>Einheit</code>, <code>Mieter</code> sowie optional pro
+        Merkmalgruppe <code>&lt;gruppe&gt;_plus</code>/<code>&lt;gruppe&gt;_minus</code>
+        (bad, kueche, wohnung, gebaeude, wohnumfeld).
+      </p>
+      <label>Kappungsgrenze
+        <select id="kappungsgrenze-liste">
+          <option value="0.15" selected>15 % (Berlin, abgesenkte Kappungsgrenze)</option>
+          <option value="0.20">20 % (gesetzlicher Regelfall)</option>
+        </select>
+      </label>
+      <button type="submit">Mieterliste prüfen</button>
+    </form>
+    <div id="ergebnis-liste"></div>
+  </section>
+
+  <script>
+    window.MERKMALGRUPPEN = {{ merkmalgruppen | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

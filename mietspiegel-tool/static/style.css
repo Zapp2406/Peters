@@ -1,0 +1,199 @@
+:root {
+  --bg: #f7f6f3;
+  --panel: #ffffff;
+  --border: #ddd8d0;
+  --text: #23201b;
+  --muted: #6b675f;
+  --accent: #8a5a2b;
+  --accent-dark: #6b4520;
+  --ok: #2f6b3a;
+  --warn: #a6531d;
+  --bad: #a3312a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0 0 3rem;
+}
+
+header {
+  padding: 2rem 2rem 1rem;
+}
+header h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+.subtitle { color: var(--muted); margin: 0; }
+
+.disclaimer {
+  margin: 0 2rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #fdf3e3;
+  border: 1px solid #e8d3a6;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #6b4d1a;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 2rem 1rem;
+}
+.tab-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.tab-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.tab-panel { display: none; margin: 0 2rem; }
+.tab-panel.active { display: block; }
+
+form {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  position: relative;
+}
+
+input, select {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 1rem;
+  color: var(--text);
+  background: white;
+}
+
+fieldset {
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+legend { padding: 0 0.5rem; font-weight: 600; }
+.hinweis { color: var(--muted); font-size: 0.85rem; }
+
+.gruppe { margin-bottom: 1rem; }
+.gruppe h4 { margin: 0 0 0.4rem; }
+.gruppe-zeile { display: flex; gap: 1.5rem; align-items: center; }
+.gruppe-zeile label { flex-direction: row; align-items: center; gap: 0.4rem; }
+.gruppe-zeile input[type=number] { width: 4rem; }
+
+button[type=submit] {
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.4rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button[type=submit]:hover { background: var(--accent-dark); }
+
+.vorschlaege {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
+  display: none;
+}
+.vorschlaege div {
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+.vorschlaege div:hover { background: #f0ece4; }
+
+.ergebnis {
+  margin-top: 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: none;
+}
+.ergebnis.zeigen { display: block; }
+.ergebnis .fehler { color: var(--bad); font-weight: 600; }
+
+.kennzahlen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.kennzahl {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fbfaf8;
+}
+.kennzahl .label { font-size: 0.8rem; color: var(--muted); }
+.kennzahl .wert { font-size: 1.3rem; font-weight: 600; }
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status-ok { background: #e4f1e6; color: var(--ok); }
+.status-warn { background: #fbe9d9; color: var(--warn); }
+.status-bad { background: #f7e0de; color: var(--bad); }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: right;
+}
+th:first-child, th:nth-child(2), th:nth-child(3),
+td:first-child, td:nth-child(2), td:nth-child(3) { text-align: left; }
+th { background: #f0ece4; position: sticky; top: 0; }
+.tabelle-wrapper { overflow-x: auto; }
+
+#mieterliste-export {
+  margin-top: 1rem;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--accent);
+  background: white;
+  color: var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
