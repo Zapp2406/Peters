@@ -61,6 +61,12 @@ def api_berechnung():
         gruppen_counts=gruppen_counts,
         kappungsgrenze=float(payload.get("kappungsgrenze", DEFAULT_KAPPUNGSGRENZE)),
     )
+    # Reine Anzeige-/Verwaltungsfelder ohne Einfluss auf die Berechnung -
+    # analog zu den Zusatzfeldern beim Mieterlisten-Upload (mietspiegel/
+    # mieterliste.py: ZUSATZFELDER).
+    for feld in ("plz", "einheit", "mieter", "letzte_mietaenderung", "mietbeginn"):
+        wert = payload.get(feld)
+        ergebnis.eingabe[feld] = wert if wert not in (None, "") else None
     return jsonify(ergebnis.to_dict())
 
 

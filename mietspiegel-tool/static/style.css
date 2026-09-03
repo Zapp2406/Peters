@@ -94,6 +94,15 @@ header h1 { margin: 0 0 0.2rem; font-size: 1.5rem; letter-spacing: -0.01em; }
   padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--border);
 }
+.unterueberschrift {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.unterueberschrift:first-of-type { margin-top: 0; }
 
 .grid {
   display: grid;

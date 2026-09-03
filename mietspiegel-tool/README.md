@@ -22,12 +22,18 @@ Mietspiegel-Modul als eigenständiges, nachvollziehbares Tool.
   Merkmale aus Bad/WC, Küche, Wohnung, Gebäude und Wohnumfeld vollständig und
   direkt sichtbar (kein Ein-/Ausklappen). Zählung des Überwiegens je Gruppe
   (±20 Prozentpunkte je Gruppe) nach der im Mietspiegel beschriebenen Methode.
-- **Einzelabfrage**: Adresse + Baujahr + Größe + optionale Spannenmerkmale +
-  Ist-Miete → Kennzahlen (Unter-/Mittel-/Oberwert), Lageplan (OpenStreetMap),
-  und direkt nebeneinander **Miete alt / Miete neu nach Mietspiegel /
-  Mieterhöhung**. "Miete neu" ist per Dropdown wählbar (Unterwert, Mittelwert
-  [Standard], Oberwert, sowie der mit den Spannenmerkmalen berechnete Wert) -
-  Miete neu und Mieterhöhung werden bei Auswahl sofort neu berechnet.
+- **Einzelabfrage**: gegliedert in **Gebäude** (Straße, Hausnummer, PLZ,
+  Bezirk, Baujahr) und **Einheit** (Lage, Wohnfläche, Ist-Miete, Mietername,
+  Letzte Mietänderung, Mietbeginn, Kappungsgrenze) sowie optionale
+  Spannenmerkmale → Kennzahlen (Unter-/Mittel-/Oberwert), Lageplan
+  (OpenStreetMap), und direkt nebeneinander **Miete alt / Miete neu nach
+  Mietspiegel / Mieterhöhung**. "Miete neu" ist per Dropdown wählbar
+  (Unterwert, Mittelwert [Standard], Oberwert, sowie der mit den
+  Spannenmerkmalen berechnete Wert) - Miete neu und Mieterhöhung werden bei
+  Auswahl sofort neu berechnet. PLZ/Lage/Mietername/Letzte Mietänderung/
+  Mietbeginn sind reine Anzeigefelder ohne Einfluss auf die Berechnung -
+  dieselben Felder wie beim Mieterlisten-Upload, für Konsistenz zwischen
+  beiden Ansichten.
 - **Lageplan**: eingebettete OpenStreetMap-Karte mit Marker an der berechneten
   Adresse. Das Geocoding läuft direkt im Browser über die öffentliche
   Nominatim-API von OpenStreetMap - die eingegebene Adresse wird dafür an

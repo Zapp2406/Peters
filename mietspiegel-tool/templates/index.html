@@ -27,6 +27,8 @@
     <div class="spalten">
       <form id="form-einzel" class="karte">
         <h2 class="karte-titel">Angaben zur Wohnung</h2>
+
+        <h3 class="unterueberschrift">Gebäude</h3>
         <div class="grid">
           <label>Straße
             <input type="text" id="strasse" autocomplete="off" required>
@@ -35,17 +37,36 @@
           <label>Hausnummer
             <input type="number" id="hausnummer" required min="1">
           </label>
+          <label>PLZ
+            <input type="text" id="plz" inputmode="numeric" maxlength="5">
+          </label>
           <label>Bezirk (nur falls mehrdeutig)
             <select id="bezirk"><option value="">– automatisch –</option></select>
-          </label>
-          <label>Wohnfläche (m²)
-            <input type="number" id="groesse_qm" step="0.1" required min="1">
           </label>
           <label>Baujahr / Bezugsfertigkeit
             <input type="number" id="baujahr" required min="1700" max="2030">
           </label>
+        </div>
+
+        <h3 class="unterueberschrift">Einheit</h3>
+        <div class="grid">
+          <label>Lage
+            <input type="text" id="einheit" placeholder="z. B. 2. OG rechts">
+          </label>
+          <label>Wohnfläche (m²)
+            <input type="number" id="groesse_qm" step="0.1" required min="1">
+          </label>
           <label>Miete alt (Ist-Nettokaltmiete, €/Monat)
             <input type="number" id="ist_miete" step="0.01" min="0">
+          </label>
+          <label>Mietername
+            <input type="text" id="mietername">
+          </label>
+          <label>Letzte Mietänderung
+            <input type="date" id="letzte_mietaenderung">
+          </label>
+          <label>Mietbeginn
+            <input type="date" id="mietbeginn">
           </label>
           <label>Kappungsgrenze
             <select id="kappungsgrenze">

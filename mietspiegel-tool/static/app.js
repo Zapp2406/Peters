@@ -234,9 +234,23 @@ function renderEinzelErgebnis(e) {
     });
   }
 
+  const zusatzfelder = [
+    { label: "PLZ", wert: e.eingabe && e.eingabe.plz },
+    { label: "Lage", wert: e.eingabe && e.eingabe.einheit },
+    { label: "Mietername", wert: e.eingabe && e.eingabe.mieter },
+    { label: "Letzte Mietänderung", wert: e.eingabe && e.eingabe.letzte_mietaenderung },
+    { label: "Mietbeginn", wert: e.eingabe && e.eingabe.mietbeginn },
+  ].filter((f) => f.wert);
+  const zusatzfelderHtml = zusatzfelder.length
+    ? `<div class="kennzahlen kennzahlen-klein">${zusatzfelder
+        .map((f) => `<div class="kennzahl"><div class="label">${esc(f.label)}</div><div class="wert">${esc(f.wert)}</div></div>`)
+        .join("")}</div>`
+    : "";
+
   box.innerHTML = `
     <h3>${esc(e.strasse)} ${esc(e.hausnummer)}, ${esc(e.bezirk)} — Wohnlage: ${esc(e.wohnlage)} (${e.gebiet === "O" ? "Ost" : "West"})</h3>
     <p class="hinweis">Bezugsfertigkeit: ${esc(e.bezugsfertigkeit_kategorie)} · ${esc(e.groesse_qm)} m²</p>
+    ${zusatzfelderHtml}
 
     <div id="lageplan" class="lageplan"></div>
 
@@ -310,6 +324,11 @@ function initFormEinzel() {
       baujahr: document.getElementById("baujahr").value,
       ist_nettokaltmiete_gesamt: document.getElementById("ist_miete").value,
       kappungsgrenze: document.getElementById("kappungsgrenze").value,
+      plz: document.getElementById("plz").value,
+      einheit: document.getElementById("einheit").value,
+      mieter: document.getElementById("mietername").value,
+      letzte_mietaenderung: document.getElementById("letzte_mietaenderung").value,
+      mietbeginn: document.getElementById("mietbeginn").value,
       merkmale: sammleMerkmale(),
     };
     const res = await fetch("/api/berechnung", {
