@@ -33,6 +33,10 @@ class Ergebnis:
     eingabe: dict
     fehler: Optional[str] = None
     hinweise: list[str] = field(default_factory=list)
+    # Rohdaten der Original-Zeile aus einer hochgeladenen Mieterliste (alle
+    # Original-Spalten, unabhängig davon ob sie für die Berechnung erkannt
+    # wurden) - für die vollständige Übernahme in die Ergebnisanzeige.
+    original_daten: dict = field(default_factory=dict)
 
     strasse: Optional[str] = None
     hausnummer: Optional[int] = None

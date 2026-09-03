@@ -24,58 +24,69 @@
   </nav>
 
   <section id="tab-einzel" class="tab-panel active">
-    <form id="form-einzel">
-      <div class="grid">
-        <label>Straße
-          <input type="text" id="strasse" autocomplete="off" required>
-          <div id="strasse-vorschlaege" class="vorschlaege"></div>
-        </label>
-        <label>Hausnummer
-          <input type="number" id="hausnummer" required min="1">
-        </label>
-        <label>Bezirk (nur falls mehrdeutig)
-          <select id="bezirk"><option value="">– automatisch –</option></select>
-        </label>
-        <label>Wohnfläche (m²)
-          <input type="number" id="groesse_qm" step="0.1" required min="1">
-        </label>
-        <label>Baujahr / Bezugsfertigkeit
-          <input type="number" id="baujahr" required min="1700" max="2030">
-        </label>
-        <label>Ist-Nettokaltmiete (€/Monat, gesamt)
-          <input type="number" id="ist_miete" step="0.01" min="0">
-        </label>
-        <label>Kappungsgrenze
-          <select id="kappungsgrenze">
-            <option value="0.15" selected>15 % (Berlin, abgesenkte Kappungsgrenze)</option>
-            <option value="0.20">20 % (gesetzlicher Regelfall)</option>
-          </select>
-        </label>
-      </div>
+    <div class="spalten">
+      <form id="form-einzel" class="karte">
+        <h2 class="karte-titel">Angaben zur Wohnung</h2>
+        <div class="grid">
+          <label>Straße
+            <input type="text" id="strasse" autocomplete="off" required>
+            <div id="strasse-vorschlaege" class="vorschlaege"></div>
+          </label>
+          <label>Hausnummer
+            <input type="number" id="hausnummer" required min="1">
+          </label>
+          <label>Bezirk (nur falls mehrdeutig)
+            <select id="bezirk"><option value="">– automatisch –</option></select>
+          </label>
+          <label>Wohnfläche (m²)
+            <input type="number" id="groesse_qm" step="0.1" required min="1">
+          </label>
+          <label>Baujahr / Bezugsfertigkeit
+            <input type="number" id="baujahr" required min="1700" max="2030">
+          </label>
+          <label>Miete alt (Ist-Nettokaltmiete, €/Monat)
+            <input type="number" id="ist_miete" step="0.01" min="0">
+          </label>
+          <label>Kappungsgrenze
+            <select id="kappungsgrenze">
+              <option value="0.15" selected>15 % (Berlin, abgesenkte Kappungsgrenze)</option>
+              <option value="0.20">20 % (gesetzlicher Regelfall)</option>
+            </select>
+          </label>
+        </div>
 
-      <fieldset>
-        <legend>Wohnwerterhöhende / -mindernde Merkmale (Nr. 11 Orientierungshilfe)</legend>
-        <p class="hinweis">Optional. Ohne Angabe wird der Mittelwert der Mietspiegeltabelle angesetzt.</p>
-        <div id="merkmalgruppen"></div>
-      </fieldset>
+        <fieldset>
+          <legend>Spannenmerkmale (Nr. 11 Orientierungshilfe)</legend>
+          <p class="hinweis">Optional. Ohne Angabe wird der Mittelwert der Mietspiegeltabelle angesetzt.</p>
+          <div id="merkmalgruppen"></div>
+        </fieldset>
 
-      <button type="submit">Berechnen</button>
-    </form>
+        <button type="submit">Berechnen</button>
+      </form>
 
-    <div id="ergebnis-einzel" class="ergebnis"></div>
+      <div id="ergebnis-einzel" class="ergebnis karte"></div>
+    </div>
   </section>
 
   <section id="tab-liste" class="tab-panel">
-    <form id="form-liste">
-      <label>Mieterliste (.xlsx oder .csv)
-        <input type="file" id="mieterliste-datei" accept=".xlsx,.xls,.csv" required>
+    <form id="form-liste" class="karte">
+      <h2 class="karte-titel">Mieterliste hochladen</h2>
+      <label>Datei (.xlsx, .csv oder .pdf)
+        <input type="file" id="mieterliste-datei" accept=".xlsx,.xls,.csv,.pdf" required>
       </label>
       <p class="hinweis">
         Erwartete Spalten (Groß-/Kleinschreibung egal): <code>Straße</code>, <code>Hausnummer</code>,
         <code>Wohnfläche</code>/<code>qm</code>, <code>Baujahr</code>, optional <code>Bezirk</code>,
-        <code>Nettokaltmiete</code>, <code>Einheit</code>, <code>Mieter</code> sowie optional pro
+        <code>Nettokaltmiete</code>, <code>Einheit</code>/<code>Lage</code>, <code>Mieter</code> sowie optional pro
         Merkmalgruppe <code>&lt;gruppe&gt;_plus</code>/<code>&lt;gruppe&gt;_minus</code>
-        (bad, kueche, wohnung, gebaeude, wohnumfeld).
+        (bad, kueche, wohnung, gebaeude, wohnumfeld). Alle weiteren Spalten aus der Datei werden unverändert
+        übernommen und mit angezeigt.
+      </p>
+      <p class="hinweis">
+        <strong>PDF-Listen:</strong> Bei Text-PDFs (z. B. Export aus dem Hausverwaltungsprogramm) wird die Tabelle
+        direkt erkannt. Bei gescannten/eingescannten PDFs greift automatisch eine OCR-Texterkennung
+        (benötigt lokal <code>tesseract</code> + <code>poppler</code>, siehe README) – das Ergebnis bei OCR
+        bitte vor Weiterverwendung stichprobenartig prüfen.
       </p>
       <label>Kappungsgrenze
         <select id="kappungsgrenze-liste">
@@ -85,7 +96,7 @@
       </label>
       <button type="submit">Mieterliste prüfen</button>
     </form>
-    <div id="ergebnis-liste"></div>
+    <div id="ergebnis-liste" class="karte"></div>
   </section>
 
   <script>

@@ -21,7 +21,11 @@ def test_csv_upload_end_zu_ende():
 
     df = ergebnisse_zu_dataframe(ergebnisse)
     assert len(df) == 2
-    assert "Erhöhungspotential €" in df.columns
+    assert "Mieterhöhung €" in df.columns
+    # Original-Spalten aus der Mieterliste müssen vollständig erhalten bleiben
+    assert "Einheit" in df.columns
+    assert "Straße" in df.columns
+    assert list(df["Einheit"]) == ["WE 1", "WE 2"]
 
 
 def test_fehlende_pflichtspalte_wirft_fehler():

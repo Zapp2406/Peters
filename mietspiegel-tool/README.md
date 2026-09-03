@@ -18,15 +18,30 @@ Mietspiegel-Modul als eigenständiges, nachvollziehbares Tool.
   (gerade/ungerade/fortlaufend).
 - **Orientierungswerte-Tabelle**: 189 Zeilen (Unter-/Mittel-/Oberwert nach
   Baualtersklasse, Wohnungsgröße und Wohnlage).
-- **Merkmalgruppen-Checkliste**: alle wohnwerterhöhenden/-mindernden
-  Merkmale aus Bad/WC, Küche, Wohnung, Gebäude und Wohnumfeld. Zählung des
-  Überwiegens je Gruppe (±20 Prozentpunkte je Gruppe) nach der im Mietspiegel
-  beschriebenen Methode.
-- **Einzelabfrage**: Adresse + Baujahr + Größe + optionale Merkmale + Ist-Miete
-  → berechnete Vergleichsmiete, Differenz, Mieterhöhungspotential unter
-  Berücksichtigung der Kappungsgrenze.
-- **Mieterlisten-Upload** (.xlsx/.csv): komplette Bestandsliste in einem
-  Rutsch auswerten, Ergebnis als Tabelle und als Excel-Export.
+- **Spannenmerkmale** (vormals "wohnwerterhöhende/-mindernde Merkmale"): alle
+  Merkmale aus Bad/WC, Küche, Wohnung, Gebäude und Wohnumfeld vollständig und
+  direkt sichtbar (kein Ein-/Ausklappen). Zählung des Überwiegens je Gruppe
+  (±20 Prozentpunkte je Gruppe) nach der im Mietspiegel beschriebenen Methode.
+- **Einzelabfrage**: Adresse + Baujahr + Größe + optionale Spannenmerkmale +
+  Ist-Miete → Kennzahlen (Unter-/Mittel-/Oberwert), Lageplan (OpenStreetMap),
+  und direkt nebeneinander **Miete alt / Miete neu nach Mietspiegel /
+  Mieterhöhung**. "Miete neu" ist per Dropdown wählbar (Unterwert, Mittelwert
+  [Standard], Oberwert, sowie der mit den Spannenmerkmalen berechnete Wert) -
+  Miete neu und Mieterhöhung werden bei Auswahl sofort neu berechnet.
+- **Lageplan**: eingebettete OpenStreetMap-Karte mit Marker an der berechneten
+  Adresse. Das Geocoding läuft direkt im Browser über die öffentliche
+  Nominatim-API von OpenStreetMap - die eingegebene Adresse wird dafür an
+  `nominatim.openstreetmap.org` übertragen (kein eigener Server involviert).
+  Erfordert eine Internetverbindung; ohne Verbindung erscheint ein Hinweis
+  statt der Karte, der Rest des Tools funktioniert weiterhin.
+- **Mieterlisten-Upload** (.xlsx, .csv **oder .pdf**): komplette Bestandsliste
+  in einem Rutsch auswerten. Alle Original-Spalten aus der Datei (Mieter,
+  Einheit, Lage, Größe, Kaltmiete, ...) werden vollständig und unverändert
+  in die Ergebnistabelle übernommen und um die Mietspiegel-Werte ergänzt -
+  inklusive Dropdown je Zeile für "Miete neu". Export als Excel-Datei.
+- **PDF-Import mit OCR-Fallback**: Text-PDFs (z. B. Direktexport aus dem
+  Hausverwaltungsprogramm) werden direkt als Tabelle erkannt. Für gescannte/
+  eingescannte PDFs greift automatisch eine OCR-Texterkennung.
 
 ## Wichtiger Hinweis
 
@@ -118,6 +133,7 @@ Danach ist die App unter <http://127.0.0.1:5001> erreichbar,
 
 ```bash
 source .venv/bin/activate
+pip install -r requirements-dev.txt   # zusätzlich: pytest, reportlab (nur für PDF-Testdaten)
 python -m pytest tests/ -v
 ```
 
@@ -139,11 +155,30 @@ Umlaute egal). Erkannt werden u. a.:
 | Pflicht | Baujahr |
 | optional | Bezirk (nur nötig, wenn eine Straße in mehreren Bezirken existiert) |
 | optional | Nettokaltmiete (aktuell, monatlich, gesamt) |
-| optional | Einheit, Mieter (nur zur Anzeige) |
-| optional | `<gruppe>_plus` / `<gruppe>_minus` je Merkmalgruppe (`bad`, `kueche`, `wohnung`, `gebaeude`, `wohnumfeld`) — Anzahl der zutreffenden Merkmale, falls schon aus dem Hausverwaltungsprogramm bekannt |
+| optional | Einheit / Lage, Mieter (nur zur Anzeige) |
+| optional | `<gruppe>_plus` / `<gruppe>_minus` je Merkmalgruppe (`bad`, `kueche`, `wohnung`, `gebaeude`, `wohnumfeld`) — Anzahl der zutreffenden Spannenmerkmale, falls schon aus dem Hausverwaltungsprogramm bekannt |
 
 Ohne Merkmal-Spalten wird automatisch der Mittelwert der Mietspiegeltabelle
-angesetzt. Eine Beispieldatei liegt unter `sample_mieterliste.csv`.
+angesetzt. **Alle weiteren Spalten der Datei** (auch nicht erkannte, z. B.
+Mieternamen, Vertragsdaten, interne Notizen) werden unverändert in die
+Ergebnistabelle übernommen. Eine Beispieldatei liegt unter
+`sample_mieterliste.csv`.
+
+### PDF-Listen und OCR
+
+- **Text-PDFs** (z. B. direkter Export aus dem Hausverwaltungsprogramm)
+  funktionieren ohne weitere Installation (nutzt `pdfplumber`, reines Python).
+- **Gescannte/eingescannte PDFs** benötigen zusätzlich die Systemwerkzeuge
+  `tesseract` (inkl. deutschem Sprachpaket) und `poppler`:
+  - macOS: `brew install tesseract tesseract-lang poppler`
+  - Docker/Synology: bereits im `Dockerfile` enthalten, keine weitere Aktion nötig
+  - `start_local.sh` prüft bei jedem Start automatisch, ob beide Werkzeuge
+    vorhanden sind, und weist andernfalls nur darauf hin (Text-PDFs, Excel
+    und CSV funktionieren trotzdem uneingeschränkt).
+- OCR-Ergebnisse sind ein **Best-Effort**: Wörter werden anhand ihrer Position
+  im Bild zu Zeilen/Spalten rekonstruiert. Bei einfachen, klar gerasterten
+  Tabellen funktioniert das zuverlässig, bei komplexen Layouts bitte das
+  Ergebnis vor Weiterverwendung stichprobenartig prüfen.
 
 ## Projektstruktur
 
@@ -153,8 +188,10 @@ mietspiegel-tool/
 ├── start_local.sh          Lokaler Start ohne Docker (venv + Browser)
 ├── MietspiegelTool.app/    macOS-App-Bundle (Doppelklick-Start, siehe oben)
 ├── install_desktop_icon.command  Legt einmalig ein Start-Icon auf dem Schreibtisch an
-├── Dockerfile              Produktions-Image (gunicorn)
+├── Dockerfile              Produktions-Image (gunicorn, inkl. tesseract/poppler)
 ├── docker-compose.yml      Für lokalen Docker-Test und Synology Container Manager
+├── requirements.txt        Python-Abhängigkeiten (Betrieb)
+├── requirements-dev.txt    Zusätzlich für Tests (pytest, reportlab)
 ├── data/
 │   ├── strassen.json       Straßenverzeichnis + Wohnlagen (Mietspiegel 2026)
 │   ├── tabelle.json        Orientierungswerte-Tabelle (Mietspiegel 2026)
@@ -164,7 +201,8 @@ mietspiegel-tool/
 │   ├── tabelle.py          Baujahr/Größe/Wohnlage → Orientierungswert
 │   ├── merkmale.py         Laden der Merkmalgruppen
 │   ├── berechnung.py       Spanneneinordnung, Vergleich, Kappungsgrenze
-│   └── mieterliste.py      Excel/CSV-Import und Massenberechnung
+│   ├── mieterliste.py      Excel/CSV/PDF-Import und Massenberechnung
+│   └── pdf_import.py       PDF-Tabellenextraktion (pdfplumber) + OCR-Fallback
 ├── templates/index.html    UI (Einzelabfrage + Upload)
 ├── static/{style.css,app.js}
 ├── tests/                  pytest-Suite

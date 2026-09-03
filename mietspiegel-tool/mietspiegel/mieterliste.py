@@ -1,5 +1,5 @@
-"""Einlesen einer Mieterliste (xlsx/csv aus dem Hausverwaltungsprogramm) und
-Massenberechnung gegen den Mietspiegel."""
+"""Einlesen einer Mieterliste (xlsx/csv/pdf aus dem Hausverwaltungsprogramm)
+und Massenberechnung gegen den Mietspiegel."""
 from __future__ import annotations
 
 import io
@@ -10,6 +10,7 @@ import pandas as pd
 
 from .berechnung import DEFAULT_KAPPUNGSGRENZE, Ergebnis, MietspiegelRechner
 from .merkmale import GRUPPEN_IDS
+from .pdf_import import lade_dataframe_aus_pdf
 
 # Spaltenname (normalisiert, klein, ohne Sonderzeichen) -> interner Feldname
 SPALTEN_ALIASE: dict[str, str] = {
@@ -23,6 +24,7 @@ SPALTEN_ALIASE: dict[str, str] = {
     "wohnung": "einheit",
     "einheit": "einheit",
     "we": "einheit",
+    "lage": "einheit",
     "mieter": "mieter",
     "mietername": "mieter",
     "wohnflaeche": "groesse_qm",
@@ -36,6 +38,7 @@ SPALTEN_ALIASE: dict[str, str] = {
     "nettokaltmieteist": "ist_nettokaltmiete_gesamt",
     "kaltmiete": "ist_nettokaltmiete_gesamt",
     "miete": "ist_nettokaltmiete_gesamt",
+    "mietealt": "ist_nettokaltmiete_gesamt",
 }
 
 for _gid in GRUPPEN_IDS:
@@ -43,6 +46,16 @@ for _gid in GRUPPEN_IDS:
     SPALTEN_ALIASE[f"{_gid}minus"] = f"{_gid}_minus"
 
 PFLICHTFELDER = ["strasse", "hausnummer", "groesse_qm", "baujahr"]
+
+
+def _zu_python_wert(wert):
+    """Wandelt numpy-/pandas-Skalare (z.B. numpy.int64, pandas.Timestamp) in
+    JSON-serialisierbare Python-Standardtypen um."""
+    if isinstance(wert, pd.Timestamp):
+        return wert.isoformat()
+    if hasattr(wert, "item"):
+        return wert.item()
+    return wert
 
 
 def _normiere_spaltenname(name: str) -> str:
@@ -53,8 +66,11 @@ def _normiere_spaltenname(name: str) -> str:
 
 
 def lade_dataframe(datei_bytes: bytes, dateiname: str) -> pd.DataFrame:
-    if dateiname.lower().endswith(".csv"):
+    name = dateiname.lower()
+    if name.endswith(".csv"):
         return pd.read_csv(io.BytesIO(datei_bytes), sep=None, engine="python")
+    if name.endswith(".pdf"):
+        return lade_dataframe_aus_pdf(datei_bytes)
     return pd.read_excel(io.BytesIO(datei_bytes))
 
 
@@ -84,8 +100,10 @@ def verarbeite_mieterliste(
     rechner: Optional[MietspiegelRechner] = None,
     kappungsgrenze: float = DEFAULT_KAPPUNGSGRENZE,
 ) -> list[Ergebnis]:
-    df = lade_dataframe(datei_bytes, dateiname)
-    df = _mappe_spalten(df)
+    df_original = lade_dataframe(datei_bytes, dateiname)
+    df = _mappe_spalten(df_original.copy())
+    df_original = df_original.reset_index(drop=True)
+    df = df.reset_index(drop=True)
 
     fehlende = [f for f in PFLICHTFELDER if f not in df.columns]
     if fehlende:
@@ -97,7 +115,7 @@ def verarbeite_mieterliste(
 
     rechner = rechner or MietspiegelRechner()
     ergebnisse: list[Ergebnis] = []
-    for _, row in df.iterrows():
+    for idx, row in df.iterrows():
         if pd.isna(row.get("strasse")):
             continue
         ist_miete = row.get("ist_nettokaltmiete_gesamt")
@@ -117,37 +135,60 @@ def verarbeite_mieterliste(
         )
         ergebnis.eingabe["einheit"] = row.get("einheit") if "einheit" in df.columns else None
         ergebnis.eingabe["mieter"] = row.get("mieter") if "mieter" in df.columns else None
+        # Komplette Original-Zeile unverändert mitführen (alle Spalten aus der
+        # hochgeladenen Datei, auch nicht erkannte), damit nichts verloren geht.
+        ergebnis.original_daten = {
+            str(spalte): (None if pd.isna(wert) else _zu_python_wert(wert))
+            for spalte, wert in df_original.loc[idx].items()
+        }
         ergebnisse.append(ergebnis)
     return ergebnisse
 
 
+BERECHNETE_SPALTEN = [
+    "Wohnlage (Mietspiegel)",
+    "Bezugsfertigkeit-Kategorie",
+    "Unterwert €/m²",
+    "Mittelwert €/m²",
+    "Oberwert €/m²",
+    "Spannenmerkmale-Nettoprozent",
+    "Miete alt (Ist) €",
+    "Miete neu (Mietspiegel, mit Spannenmerkmalen) €",
+    "Mieterhöhung €",
+    "Mieterhöhung %",
+    "Status",
+    "Fehler",
+]
+
+
 def ergebnisse_zu_dataframe(ergebnisse: list[Ergebnis]) -> pd.DataFrame:
+    original_spalten: list[str] = []
     zeilen = []
     for e in ergebnisse:
-        zeilen.append(
+        for spalte in e.original_daten:
+            if spalte not in original_spalten:
+                original_spalten.append(spalte)
+        zeile = dict(e.original_daten)
+        zeile.update(
             {
-                "Einheit": e.eingabe.get("einheit"),
-                "Mieter": e.eingabe.get("mieter"),
-                "Straße": e.strasse or e.eingabe.get("strasse"),
-                "Hausnr.": e.hausnummer or e.eingabe.get("hausnummer"),
-                "Bezirk": e.bezirk,
-                "Wohnlage": e.wohnlage,
-                "Baujahr": e.eingabe.get("baujahr"),
-                "qm": e.groesse_qm,
+                "Wohnlage (Mietspiegel)": e.wohnlage,
+                "Bezugsfertigkeit-Kategorie": e.bezugsfertigkeit_kategorie,
                 "Unterwert €/m²": e.unterwert_qm,
                 "Mittelwert €/m²": e.mittelwert_qm,
                 "Oberwert €/m²": e.oberwert_qm,
-                "Merkmal-Nettoprozent": e.netto_merkmal_prozent,
-                "Vergleichsmiete €/m²": e.vergleichsmiete_qm,
-                "Vergleichsmiete gesamt €": e.vergleichsmiete_gesamt,
-                "Ist-Nettokaltmiete €": e.ist_nettokaltmiete_gesamt,
-                "Differenz €": e.differenz_gesamt,
-                "Differenz %": e.differenz_prozent,
-                "Max. neue Miete (Kappungsgrenze) €": e.max_zulaessige_neue_miete_gesamt,
-                "Erhöhungspotential €": e.erhoehungspotential_gesamt,
-                "Erhöhungspotential %": e.erhoehungspotential_prozent,
+                "Spannenmerkmale-Nettoprozent": e.netto_merkmal_prozent,
+                "Miete alt (Ist) €": e.ist_nettokaltmiete_gesamt,
+                "Miete neu (Mietspiegel, mit Spannenmerkmalen) €": e.vergleichsmiete_gesamt,
+                "Mieterhöhung €": e.erhoehungspotential_gesamt,
+                "Mieterhöhung %": e.erhoehungspotential_prozent,
                 "Status": e.status,
                 "Fehler": e.fehler,
             }
         )
-    return pd.DataFrame(zeilen)
+        zeilen.append(zeile)
+    df = pd.DataFrame(zeilen)
+    # Original-Spalten (in Reihenfolge der Datei) zuerst, danach die
+    # berechneten Spalten in fester, logischer Reihenfolge - insbesondere
+    # "Miete alt" und "Miete neu" direkt nebeneinander.
+    spaltenreihenfolge = original_spalten + BERECHNETE_SPALTEN
+    return df.reindex(columns=[s for s in spaltenreihenfolge if s in df.columns])

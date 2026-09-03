@@ -14,6 +14,10 @@ from mietspiegel.strassen import Strassenverzeichnis
 from mietspiegel.tabelle import Mietspiegeltabelle
 
 app = Flask(__name__)
+# Spaltenreihenfolge der Mieterlisten-Ergebnisse bewusst gesetzt (Original-
+# Spalten zuerst, "Miete alt"/"Miete neu" nebeneinander) - Flasks Standard,
+# JSON-Keys alphabetisch zu sortieren, würde das wieder zerstören.
+app.json.sort_keys = False
 
 _strassenverzeichnis = Strassenverzeichnis()
 _tabelle = Mietspiegeltabelle()
@@ -80,6 +84,10 @@ def api_mieterliste_upload():
         {
             "anzahl": len(ergebnisse),
             "zeilen": df.where(df.notna(), None).to_dict(orient="records"),
+            # Rohdaten je Zeile (gleiche Reihenfolge wie "zeilen"), damit das
+            # Frontend die Unter-/Mittel-/Oberwert-Dropdown-Auswahl für
+            # "Miete neu" ohne erneuten Server-Aufruf live nachrechnen kann.
+            "ergebnisse": [e.to_dict() for e in ergebnisse],
         }
     )
 

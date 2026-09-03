@@ -19,10 +19,19 @@ if [ ! -d ".venv" ]; then
   # shellcheck disable=SC1091
   source .venv/bin/activate
   pip install --quiet --upgrade pip
-  pip install --quiet -r requirements.txt
 else
   # shellcheck disable=SC1091
   source .venv/bin/activate
+fi
+# Bei jedem Start prüfen, ob neue/aktualisierte Abhängigkeiten nachinstalliert
+# werden müssen (schnell, falls schon alles vorhanden ist).
+pip install --quiet -r requirements.txt
+
+if ! command -v tesseract >/dev/null 2>&1 || ! command -v pdftoppm >/dev/null 2>&1; then
+  echo "Hinweis: 'tesseract' und/oder 'poppler' nicht gefunden - der OCR-Import"
+  echo "für gescannte PDF-Mieterlisten steht dann nicht zur Verfügung (Excel/CSV"
+  echo "und Text-PDFs funktionieren trotzdem). Zum Nachrüsten:"
+  echo "  brew install tesseract tesseract-lang poppler"
 fi
 
 PORT="${MIETSPIEGEL_PORT:-5001}"
