@@ -28,10 +28,22 @@ fi
 pip install --quiet -r requirements.txt
 
 if ! command -v tesseract >/dev/null 2>&1 || ! command -v pdftoppm >/dev/null 2>&1; then
-  echo "Hinweis: 'tesseract' und/oder 'poppler' nicht gefunden - der OCR-Import"
-  echo "für gescannte PDF-Mieterlisten steht dann nicht zur Verfügung (Excel/CSV"
-  echo "und Text-PDFs funktionieren trotzdem). Zum Nachrüsten:"
-  echo "  brew install tesseract tesseract-lang poppler"
+  echo "Für OCR bei gescannten PDF-Mieterlisten fehlen 'tesseract' und/oder 'poppler'"
+  echo "(Excel/CSV und Text-PDFs funktionieren auch ohne die beiden)."
+  if command -v brew >/dev/null 2>&1; then
+    read -r -p "Jetzt automatisch installieren (brew install tesseract tesseract-lang poppler)? [J/n] " antwort
+    antwort="${antwort:-j}"
+    if [[ "$antwort" =~ ^[jJyY] ]]; then
+      echo "Installiere tesseract + poppler (kann einige Minuten dauern)..."
+      brew install tesseract tesseract-lang poppler \
+        || echo "Installation fehlgeschlagen - Excel/CSV und Text-PDFs funktionieren trotzdem."
+    else
+      echo "Übersprungen. Später nachholen mit: brew install tesseract tesseract-lang poppler"
+    fi
+  else
+    echo "Homebrew wurde nicht gefunden. Homebrew installieren: https://brew.sh"
+    echo "Danach: brew install tesseract tesseract-lang poppler"
+  fi
 fi
 
 PORT="${MIETSPIEGEL_PORT:-5001}"

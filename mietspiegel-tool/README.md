@@ -176,8 +176,10 @@ Ergebnistabelle übernommen. Eine Beispieldatei liegt unter
   - macOS: `brew install tesseract tesseract-lang poppler`
   - Docker/Synology: bereits im `Dockerfile` enthalten, keine weitere Aktion nötig
   - `start_local.sh` prüft bei jedem Start automatisch, ob beide Werkzeuge
-    vorhanden sind, und weist andernfalls nur darauf hin (Text-PDFs, Excel
-    und CSV funktionieren trotzdem uneingeschränkt).
+    vorhanden sind. Fehlen sie und ist Homebrew installiert, bietet das
+    Skript an, sie direkt zu installieren (Rückfrage im Terminal-Fenster,
+    Enter/"j" genügt) - Text-PDFs, Excel und CSV funktionieren auch ohne
+    diese beiden Werkzeuge uneingeschränkt weiter.
 - OCR-Ergebnisse sind ein **Best-Effort**: Wörter werden anhand ihrer Position
   im Bild zu Zeilen/Spalten rekonstruiert. Bei einfachen, klar gerasterten
   Tabellen funktioniert das zuverlässig, bei komplexen Layouts bitte das
