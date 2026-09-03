@@ -129,6 +129,20 @@ function initStrassenAutocomplete() {
   }
 }
 
+// HTML-Escaping für alle Werte, die aus Nutzereingaben oder hochgeladenen
+// Dateien (CSV/XLSX/PDF) stammen und per innerHTML eingefügt werden - ohne
+// das könnte eine präparierte Mieterliste (z.B. eine Zelle mit
+// "<img src=x onerror=...>") Skriptcode im Browser ausführen.
+function esc(wert) {
+  if (wert === null || wert === undefined) return "";
+  return String(wert)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function formatEuro(wert) {
   if (wert === null || wert === undefined || Number.isNaN(wert)) return "–";
   return wert.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -196,15 +210,15 @@ function renderEinzelErgebnis(e) {
   const box = document.getElementById("ergebnis-einzel");
   box.classList.add("zeigen");
   if (e.fehler) {
-    box.innerHTML = `<p class="fehler">${e.fehler}</p>`;
+    box.innerHTML = `<p class="fehler">${esc(e.fehler)}</p>`;
     return;
   }
 
   const merkmaleHtml = e.merkmale
     .map(
       (m) =>
-        `<tr><td>${m.gruppe_name}</td><td>${m.anzahl_plus}</td><td>${m.anzahl_minus}</td>` +
-        `<td>${m.ueberwiegt}</td><td>${m.anteil_prozent > 0 ? "+" : ""}${m.anteil_prozent}%</td></tr>`
+        `<tr><td>${esc(m.gruppe_name)}</td><td>${m.anzahl_plus}</td><td>${m.anzahl_minus}</td>` +
+        `<td>${esc(m.ueberwiegt)}</td><td>${m.anteil_prozent > 0 ? "+" : ""}${m.anteil_prozent}%</td></tr>`
     )
     .join("");
 
@@ -221,8 +235,8 @@ function renderEinzelErgebnis(e) {
   }
 
   box.innerHTML = `
-    <h3>${e.strasse} ${e.hausnummer}, ${e.bezirk} — Wohnlage: ${e.wohnlage} (${e.gebiet === "O" ? "Ost" : "West"})</h3>
-    <p class="hinweis">Bezugsfertigkeit: ${e.bezugsfertigkeit_kategorie} · ${e.groesse_qm} m²</p>
+    <h3>${esc(e.strasse)} ${esc(e.hausnummer)}, ${esc(e.bezirk)} — Wohnlage: ${esc(e.wohnlage)} (${e.gebiet === "O" ? "Ost" : "West"})</h3>
+    <p class="hinweis">Bezugsfertigkeit: ${esc(e.bezugsfertigkeit_kategorie)} · ${esc(e.groesse_qm)} m²</p>
 
     <div id="lageplan" class="lageplan"></div>
 
@@ -259,7 +273,7 @@ function renderEinzelErgebnis(e) {
       <thead><tr><th>Merkmalgruppe</th><th>+</th><th>-</th><th>Überwiegt</th><th>Anteil</th></tr></thead>
       <tbody>${merkmaleHtml}</tbody>
     </table>
-    ${(e.hinweise || []).map((h) => `<p class="hinweis">ℹ️ ${h}</p>`).join("")}
+    ${(e.hinweise || []).map((h) => `<p class="hinweis">ℹ️ ${esc(h)}</p>`).join("")}
   `;
 
   const dropdown = document.getElementById("miete-neu-wahl");
@@ -315,7 +329,7 @@ const SPEZIAL_SPALTEN = ["Miete neu (Mietspiegel, mit Spannenmerkmalen) €", "M
 function renderListenErgebnis(daten) {
   const box = document.getElementById("ergebnis-liste");
   if (daten.fehler) {
-    box.innerHTML = `<p class="fehler">${daten.fehler}</p>`;
+    box.innerHTML = `<p class="fehler">${esc(daten.fehler)}</p>`;
     return;
   }
   if (!daten.zeilen || !daten.zeilen.length) {
@@ -324,8 +338,10 @@ function renderListenErgebnis(daten) {
   }
   const alleSpalten = Object.keys(daten.zeilen[0]);
   const anzeigeSpalten = alleSpalten.filter((s) => !SPEZIAL_SPALTEN.includes(s));
+  // Spaltenüberschriften und Zellwerte stammen aus der hochgeladenen Datei
+  // (CSV/XLSX/PDF) und sind damit nicht vertrauenswürdig - immer escapen.
   const head =
-    anzeigeSpalten.map((s) => `<th>${s}</th>`).join("") +
+    anzeigeSpalten.map((s) => `<th>${esc(s)}</th>`).join("") +
     `<th>Miete neu nach Mietspiegel</th><th>Mieterhöhung</th>`;
 
   const rows = daten.zeilen
@@ -336,8 +352,8 @@ function renderListenErgebnis(daten) {
         .map((s) => {
           let v = z[s];
           if (v === null || v === undefined) v = "";
-          if (s === "Status" && v) return `<td><span class="status-badge ${statusKl}">${v}</span></td>`;
-          return `<td>${v}</td>`;
+          if (s === "Status" && v) return `<td><span class="status-badge ${statusKl}">${esc(v)}</span></td>`;
+          return `<td>${esc(v)}</td>`;
         })
         .join("");
 

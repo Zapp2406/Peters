@@ -24,7 +24,6 @@ SPALTEN_ALIASE: dict[str, str] = {
     "wohnung": "einheit",
     "einheit": "einheit",
     "we": "einheit",
-    "lage": "einheit",
     "mieter": "mieter",
     "mietername": "mieter",
     "wohnflaeche": "groesse_qm",
@@ -75,11 +74,19 @@ def lade_dataframe(datei_bytes: bytes, dateiname: str) -> pd.DataFrame:
 
 
 def _mappe_spalten(df: pd.DataFrame) -> pd.DataFrame:
-    umbenennung = {}
+    """Benennt erkannte Spalten auf ihren internen Feldnamen um. Zeigen zwei
+    Original-Spalten auf denselben internen Namen (z.B. sowohl 'Miete' als
+    auch 'Nettokaltmiete' in derselben Datei), wird nur die erste umbenannt -
+    alles andere würde zu doppelten Spaltenbezeichnungen und damit zu
+    mehrdeutigen row.get(...)-Zugriffen (Series statt Skalar) führen."""
+    umbenennung: dict[str, str] = {}
+    bereits_vergeben: set[str] = set()
     for spalte in df.columns:
         key = _normiere_spaltenname(spalte)
-        if key in SPALTEN_ALIASE:
-            umbenennung[spalte] = SPALTEN_ALIASE[key]
+        ziel = SPALTEN_ALIASE.get(key)
+        if ziel and ziel not in bereits_vergeben:
+            umbenennung[spalte] = ziel
+            bereits_vergeben.add(ziel)
     return df.rename(columns=umbenennung)
 
 

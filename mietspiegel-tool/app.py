@@ -84,10 +84,22 @@ def api_mieterliste_upload():
         {
             "anzahl": len(ergebnisse),
             "zeilen": df.where(df.notna(), None).to_dict(orient="records"),
-            # Rohdaten je Zeile (gleiche Reihenfolge wie "zeilen"), damit das
-            # Frontend die Unter-/Mittel-/Oberwert-Dropdown-Auswahl für
-            # "Miete neu" ohne erneuten Server-Aufruf live nachrechnen kann.
-            "ergebnisse": [e.to_dict() for e in ergebnisse],
+            # Schlanke Rohdaten je Zeile (gleiche Reihenfolge wie "zeilen"),
+            # nur die Felder, die das Frontend für die Unter-/Mittel-/
+            # Oberwert-Dropdown-Auswahl bei "Miete neu" ohne erneuten
+            # Server-Aufruf braucht - bewusst kein voller e.to_dict() je
+            # Zeile, das würde original_daten & Co. doppelt übertragen.
+            "ergebnisse": [
+                {
+                    "unterwert_qm": e.unterwert_qm,
+                    "mittelwert_qm": e.mittelwert_qm,
+                    "oberwert_qm": e.oberwert_qm,
+                    "groesse_qm": e.groesse_qm,
+                    "ist_nettokaltmiete_gesamt": e.ist_nettokaltmiete_gesamt,
+                    "kappungsgrenze": e.kappungsgrenze,
+                }
+                for e in ergebnisse
+            ],
         }
     )
 

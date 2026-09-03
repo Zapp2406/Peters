@@ -50,9 +50,16 @@ def _extrahiere_tabellen_pdfplumber(datei_bytes: bytes) -> Optional[pd.DataFrame
             for tabelle in seite.extract_tables() or []:
                 if not tabelle:
                     continue
+                erste_zeile = [str(h or "").strip() for h in tabelle[0]]
                 start = 0
                 if header is None:
-                    header = [str(h or "").strip() for h in tabelle[0]]
+                    # Erste Tabelle im Dokument: erste Zeile ist die Kopfzeile.
+                    header = erste_zeile
+                    start = 1
+                elif erste_zeile == header:
+                    # Mehrseitige PDFs wiederholen die Kopfzeile oft auf jeder
+                    # Seite (z.B. Hausverwaltungsprogramm-Exporte) - sonst
+                    # würde sie als Datenzeile fehlinterpretiert.
                     start = 1
                 zeilen.extend(tabelle[start:])
     if not header or not zeilen:
