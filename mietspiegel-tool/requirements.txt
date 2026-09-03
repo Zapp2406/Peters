@@ -1,0 +1,10 @@
+Flask==3.0.3
+pandas==2.2.2
+openpyxl==3.1.2
+gunicorn==22.0.0
+pdfplumber==0.11.4
+
+# Optional, nur für OCR bei gescannten PDFs (siehe README). Benötigen
+# zusätzlich die Systemwerkzeuge tesseract + poppler.
+pytesseract==0.3.13
+pdf2image==1.17.0

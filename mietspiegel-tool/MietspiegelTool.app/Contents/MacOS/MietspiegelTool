@@ -1,0 +1,9 @@
+#!/bin/bash
+# Launcher für das MietspiegelTool.app-Bundle: öffnet ein Terminal-Fenster
+# und startet darin start_local.sh aus dem Projektordner (drei Ebenen über
+# diesem Skript: mietspiegel-tool/MietspiegelTool.app/Contents/MacOS/...).
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$DIR/../../.." && pwd )"
+
+osascript -e "tell application \"Terminal\" to do script \"cd '$PROJECT_ROOT' && ./start_local.sh; exit\""
+osascript -e 'tell application "Terminal" to activate'

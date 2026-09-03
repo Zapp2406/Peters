@@ -1,0 +1,6 @@
+# Zusätzliche Abhängigkeiten nur für Tests/Entwicklung (nicht für den Betrieb
+# der App nötig). reportlab wird ausschließlich genutzt, um in den PDF-Import-
+# Tests eine Beispiel-PDF mit Tabelle zu erzeugen.
+-r requirements.txt
+reportlab==4.2.5
+pytest==8.3.3
