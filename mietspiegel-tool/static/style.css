@@ -282,3 +282,44 @@ th { background: #f0ece4; position: sticky; top: 0; font-size: 0.78rem; }
 #mieterliste-export:hover { background: var(--accent-soft); }
 
 #tab-liste form.karte { margin-bottom: 1.5rem; }
+
+.gebaeude-block {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.gebaeude-kopf { margin-bottom: 1rem; }
+.gebaeude-kopf .kennzahl { background: var(--accent-soft); border-color: var(--accent); }
+.plz-eingabe {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.25rem 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: white;
+}
+
+.baujahr-nachtrag {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-alt);
+}
+.baujahr-nachtrag label { flex: 0 0 auto; }
+.baujahr-nachtrag input { width: 8rem; }
+.baujahr-nachtrag button {
+  padding: 0.5rem 1.2rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.baujahr-nachtrag button:hover { background: var(--accent-dark); }

@@ -76,11 +76,15 @@
       </label>
       <p class="hinweis">
         Erwartete Spalten (Groß-/Kleinschreibung egal): <code>Straße</code>, <code>Hausnummer</code>,
-        <code>Wohnfläche</code>/<code>qm</code>, <code>Baujahr</code>, optional <code>Bezirk</code>,
-        <code>Nettokaltmiete</code>, <code>Einheit</code>/<code>Lage</code>, <code>Mieter</code> sowie optional pro
-        Merkmalgruppe <code>&lt;gruppe&gt;_plus</code>/<code>&lt;gruppe&gt;_minus</code>
-        (bad, kueche, wohnung, gebaeude, wohnumfeld). Alle weiteren Spalten aus der Datei werden unverändert
-        übernommen und mit angezeigt.
+        <code>Wohnfläche</code>/<code>Nutzfläche</code>/<code>qm</code> sowie <code>Baujahr</code>
+        (fehlt die Baujahr-Spalte ganz, wird einmalig danach gefragt). Optional erkannt:
+        <code>PLZ</code>, <code>Bezirk</code>, <code>Kaltmiete</code>/<code>Nettokaltmiete</code>,
+        <code>Lage</code>/<code>Einheit</code>, <code>Mietername</code>/<code>Mieter</code>,
+        <code>Letzte Mietänderung</code>, <code>Mietbeginn</code>, sowie optional pro Merkmalgruppe
+        <code>&lt;gruppe&gt;_plus</code>/<code>&lt;gruppe&gt;_minus</code>
+        (bad, kueche, wohnung, gebaeude, wohnumfeld). Straße/Hausnummer/PLZ/Baujahr erscheinen einmalig im
+        Gebäude-Kopf, alles andere in der Tabelle je Einheit. Alle weiteren Spalten aus der Datei werden
+        unverändert übernommen und mit angezeigt.
       </p>
       <p class="hinweis">
         <strong>PDF-Listen:</strong> Bei Text-PDFs (z. B. Export aus dem Hausverwaltungsprogramm) wird die Tabelle

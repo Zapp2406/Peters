@@ -35,10 +35,15 @@ Mietspiegel-Modul als eigenständiges, nachvollziehbares Tool.
   Erfordert eine Internetverbindung; ohne Verbindung erscheint ein Hinweis
   statt der Karte, der Rest des Tools funktioniert weiterhin.
 - **Mieterlisten-Upload** (.xlsx, .csv **oder .pdf**): komplette Bestandsliste
-  in einem Rutsch auswerten. Alle Original-Spalten aus der Datei (Mieter,
-  Einheit, Lage, Größe, Kaltmiete, ...) werden vollständig und unverändert
-  in die Ergebnistabelle übernommen und um die Mietspiegel-Werte ergänzt -
-  inklusive Dropdown je Zeile für "Miete neu". Export als Excel-Datei.
+  in einem Rutsch auswerten, nach Gebäude (Straße + Hausnummer) gruppiert.
+  Straße, Hausnummer, PLZ (editierbares Feld, auch wenn nicht in der Datei
+  enthalten), Bezirk und Baujahr erscheinen einmalig im Gebäude-Kopf; darunter
+  je Einheit eine Tabelle mit den festen Feldern Lage, Wohn-/Nutzfläche,
+  Kaltmiete, Mietername, Letzte Mietänderung und Mietbeginn, gefolgt von allen
+  weiteren Original-Spalten aus der Datei und den Mietspiegel-Vergleichswerten
+  - inklusive Dropdown je Einheit für "Miete neu". Fehlt die Baujahr-Spalte
+  komplett, fragt das Tool einmalig danach (statt den Upload abzulehnen).
+  Export als Excel-Datei (flache Tabelle, eine Zeile je Einheit).
 - **PDF-Import mit OCR-Fallback**: Text-PDFs (z. B. Direktexport aus dem
   Hausverwaltungsprogramm) werden direkt als Tabelle erkannt. Für gescannte/
   eingescannte PDFs greift automatisch eine OCR-Texterkennung.
@@ -150,21 +155,25 @@ Größen-Grenzfälle der Tabelle ("von X bis unter Y m²") abgesichert.
 Die Spaltenüberschriften werden tolerant erkannt (Groß-/Kleinschreibung,
 Umlaute egal). Erkannt werden u. a.:
 
-| Pflicht/optional | Spalte (Beispiele) |
-|---|---|
-| Pflicht | Straße |
-| Pflicht | Hausnummer |
-| Pflicht | Wohnfläche / qm |
-| Pflicht | Baujahr |
-| optional | Bezirk (nur nötig, wenn eine Straße in mehreren Bezirken existiert) |
-| optional | Nettokaltmiete (aktuell, monatlich, gesamt) |
-| optional | Einheit / Lage, Mieter (nur zur Anzeige) |
-| optional | `<gruppe>_plus` / `<gruppe>_minus` je Merkmalgruppe (`bad`, `kueche`, `wohnung`, `gebaeude`, `wohnumfeld`) — Anzahl der zutreffenden Spannenmerkmale, falls schon aus dem Hausverwaltungsprogramm bekannt |
+| Pflicht/optional | Spalte (Beispiele) | Erscheint als |
+|---|---|---|
+| Pflicht | Straße | Gebäude-Kopf |
+| Pflicht | Hausnummer | Gebäude-Kopf |
+| Pflicht | Wohnfläche / Nutzfläche / qm | Einheiten-Tabelle: "Wohn-/Nutzfläche" |
+| Pflicht, oder einmalig manuell | Baujahr / Bezugsfertigkeit | Gebäude-Kopf (fehlt die Spalte ganz, fragt das Tool einmalig danach) |
+| optional | PLZ / Postleitzahl | Gebäude-Kopf, editierbares Feld (auch wenn nicht in der Datei enthalten) |
+| optional | Bezirk (nur nötig, wenn eine Straße in mehreren Bezirken existiert) | Gebäude-Kopf |
+| optional | Kaltmiete / Nettokaltmiete (aktuell, monatlich, gesamt) | Einheiten-Tabelle: "Kaltmiete" |
+| optional | Lage / Einheit / Wohnung / WE | Einheiten-Tabelle: "Lage" |
+| optional | Mietername / Mieter | Einheiten-Tabelle: "Mietername" |
+| optional | Letzte Mietänderung / Letzte Mieterhöhung | Einheiten-Tabelle: "Letzte Mietänderung" |
+| optional | Mietbeginn / Vertragsbeginn / Einzugsdatum | Einheiten-Tabelle: "Mietbeginn" |
+| optional | `<gruppe>_plus` / `<gruppe>_minus` je Merkmalgruppe (`bad`, `kueche`, `wohnung`, `gebaeude`, `wohnumfeld`) — Anzahl der zutreffenden Spannenmerkmale, falls schon aus dem Hausverwaltungsprogramm bekannt | wirkt sich auf die Berechnung aus |
 
 Ohne Merkmal-Spalten wird automatisch der Mittelwert der Mietspiegeltabelle
 angesetzt. **Alle weiteren Spalten der Datei** (auch nicht erkannte, z. B.
-Mieternamen, Vertragsdaten, interne Notizen) werden unverändert in die
-Ergebnistabelle übernommen. Eine Beispieldatei liegt unter
+Vertragsdaten, interne Notizen) werden unverändert in die Einheiten-Tabelle
+übernommen. Eine Beispieldatei liegt unter
 `sample_mieterliste.csv`.
 
 ### PDF-Listen und OCR

@@ -64,7 +64,7 @@ def test_pdf_upload_end_zu_ende():
     assert len(ergebnisse) == 2
     assert ergebnisse[0].fehler is None
     assert ergebnisse[0].wohnlage == "mittel"
-    assert ergebnisse[0].original_daten["Einheit"] == "WE 1"
+    assert ergebnisse[0].eingabe["einheit"] == "WE 1"
 
 
 def test_mehrseitige_pdf_wiederholte_kopfzeile_wird_nicht_als_datenzeile_gelesen():
@@ -78,4 +78,4 @@ def test_mehrseitige_pdf_wiederholte_kopfzeile_wird_nicht_als_datenzeile_gelesen
     ergebnisse = verarbeite_mieterliste(pdf_bytes, "mieterliste.pdf")
     assert len(ergebnisse) == 2
     assert all(e.fehler is None for e in ergebnisse)
-    assert [e.original_daten["Einheit"] for e in ergebnisse] == ["WE 1", "WE 2"]
+    assert [e.eingabe["einheit"] for e in ergebnisse] == ["WE 1", "WE 2"]

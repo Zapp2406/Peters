@@ -321,13 +321,42 @@ function initFormEinzel() {
   });
 }
 
-// Spalten, die in der generischen Tabelle nicht 1:1 übernommen werden,
-// weil sie stattdessen als interaktive Miete-neu/Mieterhöhung-Zellen
-// gerendert werden.
+// Spalten, die in der generischen Tabelle nicht 1:1 übernommen werden:
+// KOPF_SPALTEN erscheinen einmalig im Gebäude-Kopf statt in jeder Zeile,
+// SPEZIAL_SPALTEN werden durch interaktive Miete-neu/Mieterhöhung-Zellen
+// ersetzt.
+const KOPF_SPALTEN = [
+  "Straße",
+  "Hausnummer",
+  "PLZ",
+  "Bezirk",
+  "Baujahr",
+  "Wohnlage (Mietspiegel)",
+  "Bezugsfertigkeit-Kategorie",
+];
 const SPEZIAL_SPALTEN = ["Miete neu (Mietspiegel, mit Spannenmerkmalen) €", "Mieterhöhung €", "Mieterhöhung %"];
 
-function renderListenErgebnis(daten) {
+function renderListenErgebnis(daten, datei, kappungsgrenze) {
   const box = document.getElementById("ergebnis-liste");
+
+  if (daten.baujahr_fehlt) {
+    box.innerHTML = `
+      <p class="fehler">${esc(daten.fehler)}</p>
+      <div class="baujahr-nachtrag">
+        <label>Baujahr für dieses Gebäude
+          <input type="number" id="baujahr-nachtrag" min="1700" max="2030">
+        </label>
+        <button id="baujahr-nachtrag-weiter" type="button">Weiter</button>
+      </div>
+    `;
+    document.getElementById("baujahr-nachtrag-weiter").addEventListener("click", async () => {
+      const wert = document.getElementById("baujahr-nachtrag").value;
+      if (!wert) return;
+      await hochladeMieterliste(datei, kappungsgrenze, wert);
+    });
+    return;
+  }
+
   if (daten.fehler) {
     box.innerHTML = `<p class="fehler">${esc(daten.fehler)}</p>`;
     return;
@@ -336,55 +365,98 @@ function renderListenErgebnis(daten) {
     box.innerHTML = "<p>Keine Zeilen verarbeitet.</p>";
     return;
   }
+
   const alleSpalten = Object.keys(daten.zeilen[0]);
-  const anzeigeSpalten = alleSpalten.filter((s) => !SPEZIAL_SPALTEN.includes(s));
+  const kopfSpalten = KOPF_SPALTEN.filter((s) => alleSpalten.includes(s));
+  const anzeigeSpalten = alleSpalten.filter((s) => !SPEZIAL_SPALTEN.includes(s) && !kopfSpalten.includes(s));
+
+  // Nach Gebäude (Straße + Hausnummer) gruppieren, Reihenfolge des ersten
+  // Auftretens in der Datei beibehalten.
+  const gruppenReihenfolge = [];
+  const gruppen = new Map();
+  daten.zeilen.forEach((z, i) => {
+    const schluessel = `${z["Straße"] || ""}|${z["Hausnummer"] || ""}`;
+    if (!gruppen.has(schluessel)) {
+      gruppen.set(schluessel, { kopf: z, indizes: [] });
+      gruppenReihenfolge.push(schluessel);
+    }
+    gruppen.get(schluessel).indizes.push(i);
+  });
+
   // Spaltenüberschriften und Zellwerte stammen aus der hochgeladenen Datei
   // (CSV/XLSX/PDF) und sind damit nicht vertrauenswürdig - immer escapen.
   const head =
     anzeigeSpalten.map((s) => `<th>${esc(s)}</th>`).join("") +
     `<th>Miete neu nach Mietspiegel</th><th>Mieterhöhung</th>`;
 
-  const rows = daten.zeilen
-    .map((z, i) => {
-      const roh = (daten.ergebnisse || [])[i] || {};
-      const statusKl = statusKlasse(z["Status"] || "");
-      const zellen = anzeigeSpalten
+  const gebaeudeHtml = gruppenReihenfolge
+    .map((schluessel) => {
+      const { kopf, indizes } = gruppen.get(schluessel);
+      const kopfHtml = kopfSpalten
         .map((s) => {
-          let v = z[s];
-          if (v === null || v === undefined) v = "";
-          if (s === "Status" && v) return `<td><span class="status-badge ${statusKl}">${esc(v)}</span></td>`;
-          return `<td>${esc(v)}</td>`;
+          if (s === "PLZ") {
+            // Eigenes, editierbares Feld - PLZ steht selten in der Mieter-
+            // liste, ist für Anschreiben aber oft nötig; rein clientseitig,
+            // fließt nicht in die Berechnung ein.
+            return `<div class="kennzahl"><div class="label">PLZ</div>
+              <input type="text" class="plz-eingabe" value="${esc(kopf[s] ?? "")}" placeholder="–"></div>`;
+          }
+          const wert = kopf[s] === null || kopf[s] === undefined || kopf[s] === "" ? "–" : kopf[s];
+          return `<div class="kennzahl"><div class="label">${esc(s)}</div><div class="wert">${esc(wert)}</div></div>`;
         })
         .join("");
 
-      let mieteNeuZelle = "<td>–</td>";
-      let erhoehungZelle = "<td>–</td>";
-      if (roh.unterwert_qm != null && roh.groesse_qm != null) {
-        const optionen = [
-          { label: "Unterwert", wert: roh.unterwert_qm },
-          { label: "Mittelwert", wert: roh.mittelwert_qm, selected: true },
-          { label: "Oberwert", wert: roh.oberwert_qm },
-        ];
-        mieteNeuZelle = `
-          <td class="zelle-miete-neu">
-            <select class="miete-neu-wahl-liste" data-index="${i}">
-              ${optionen
-                .map((o) => `<option value="${o.wert}" ${o.selected ? "selected" : ""}>${o.label}</option>`)
-                .join("")}
-            </select>
-            <div class="wert-klein" data-miete-neu="${i}"></div>
-          </td>`;
-        erhoehungZelle = `<td><span data-erhoehung="${i}"></span></td>`;
-      }
-      return `<tr>${zellen}${mieteNeuZelle}${erhoehungZelle}</tr>`;
+      const rows = indizes
+        .map((i) => {
+          const z = daten.zeilen[i];
+          const roh = (daten.ergebnisse || [])[i] || {};
+          const statusKl = statusKlasse(z["Status"] || "");
+          const zellen = anzeigeSpalten
+            .map((s) => {
+              let v = z[s];
+              if (v === null || v === undefined) v = "";
+              if (s === "Status" && v) return `<td><span class="status-badge ${statusKl}">${esc(v)}</span></td>`;
+              return `<td>${esc(v)}</td>`;
+            })
+            .join("");
+
+          let mieteNeuZelle = "<td>–</td>";
+          let erhoehungZelle = "<td>–</td>";
+          if (roh.unterwert_qm != null && roh.groesse_qm != null) {
+            const optionen = [
+              { label: "Unterwert", wert: roh.unterwert_qm },
+              { label: "Mittelwert", wert: roh.mittelwert_qm, selected: true },
+              { label: "Oberwert", wert: roh.oberwert_qm },
+            ];
+            mieteNeuZelle = `
+              <td class="zelle-miete-neu">
+                <select class="miete-neu-wahl-liste" data-index="${i}">
+                  ${optionen
+                    .map((o) => `<option value="${o.wert}" ${o.selected ? "selected" : ""}>${o.label}</option>`)
+                    .join("")}
+                </select>
+                <div class="wert-klein" data-miete-neu="${i}"></div>
+              </td>`;
+            erhoehungZelle = `<td><span data-erhoehung="${i}"></span></td>`;
+          }
+          return `<tr>${zellen}${mieteNeuZelle}${erhoehungZelle}</tr>`;
+        })
+        .join("");
+
+      return `
+        <div class="gebaeude-block">
+          <div class="gebaeude-kopf kennzahlen kennzahlen-klein">${kopfHtml}</div>
+          <div class="tabelle-wrapper">
+            <table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
+          </div>
+        </div>
+      `;
     })
     .join("");
 
   box.innerHTML = `
-    <p>${daten.anzahl} Einheiten verarbeitet.</p>
-    <div class="tabelle-wrapper">
-      <table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
-    </div>
+    <p>${daten.anzahl} Einheiten verarbeitet, ${gruppenReihenfolge.length} Gebäude.</p>
+    ${gebaeudeHtml}
     <button id="mieterliste-export">Als Excel exportieren</button>
   `;
 
@@ -409,18 +481,25 @@ function renderListenErgebnis(daten) {
   });
 }
 
+async function hochladeMieterliste(datei, kappungsgrenze, baujahrOverride) {
+  const formData = new FormData();
+  formData.append("datei", datei);
+  formData.append("kappungsgrenze", kappungsgrenze);
+  if (baujahrOverride) formData.append("baujahr_override", baujahrOverride);
+  const box = document.getElementById("ergebnis-liste");
+  box.innerHTML = "<p>Datei wird verarbeitet…</p>";
+  const res = await fetch("/api/mieterliste/upload", { method: "POST", body: formData });
+  const daten = await res.json();
+  renderListenErgebnis(daten, datei, kappungsgrenze);
+}
+
 function initFormListe() {
   document.getElementById("form-liste").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const datei = document.getElementById("mieterliste-datei").files[0];
     if (!datei) return;
-    const formData = new FormData();
-    formData.append("datei", datei);
-    formData.append("kappungsgrenze", document.getElementById("kappungsgrenze-liste").value);
-    const box = document.getElementById("ergebnis-liste");
-    box.innerHTML = "<p>Datei wird verarbeitet…</p>";
-    const res = await fetch("/api/mieterliste/upload", { method: "POST", body: formData });
-    renderListenErgebnis(await res.json());
+    const kappungsgrenze = document.getElementById("kappungsgrenze-liste").value;
+    await hochladeMieterliste(datei, kappungsgrenze);
   });
 }
 

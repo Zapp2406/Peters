@@ -9,7 +9,7 @@ from flask import Flask, jsonify, render_template, request, send_file
 
 from mietspiegel.berechnung import DEFAULT_KAPPUNGSGRENZE, MietspiegelRechner
 from mietspiegel.merkmale import MERKMALE
-from mietspiegel.mieterliste import ergebnisse_zu_dataframe, verarbeite_mieterliste
+from mietspiegel.mieterliste import BaujahrFehltError, ergebnisse_zu_dataframe, verarbeite_mieterliste
 from mietspiegel.strassen import Strassenverzeichnis
 from mietspiegel.tabelle import Mietspiegeltabelle
 
@@ -70,10 +70,21 @@ def api_mieterliste_upload():
         return jsonify({"fehler": "Keine Datei hochgeladen (Feld 'datei')."}), 400
     datei = request.files["datei"]
     kappungsgrenze = float(request.form.get("kappungsgrenze", DEFAULT_KAPPUNGSGRENZE))
+    baujahr_override = request.form.get("baujahr_override") or None
+    baujahr_override = int(baujahr_override) if baujahr_override else None
     try:
         ergebnisse = verarbeite_mieterliste(
-            datei.read(), datei.filename, rechner=_rechner, kappungsgrenze=kappungsgrenze
+            datei.read(),
+            datei.filename,
+            rechner=_rechner,
+            kappungsgrenze=kappungsgrenze,
+            baujahr_override=baujahr_override,
         )
+    except BaujahrFehltError as exc:
+        # Eigenes Flag statt nur Freitext, damit das Frontend gezielt ein
+        # Eingabefeld für das Baujahr anbieten kann, statt nur eine Fehler-
+        # meldung anzuzeigen.
+        return jsonify({"fehler": str(exc), "baujahr_fehlt": True}), 400
     except ValueError as exc:
         return jsonify({"fehler": str(exc)}), 400
 
